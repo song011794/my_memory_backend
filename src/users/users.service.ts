@@ -1,21 +1,65 @@
-import { Injectable } from "@nestjs/common";
-import { ObjectId } from "mongoose";
+import { HttpException, HttpStatus, Injectable } from "@nestjs/common";
+import { InjectRepository } from "@nestjs/typeorm";
+
 import { CreateUserDto } from "./dto/create-user.dto";
 import { UpdateUserDto } from "./dto/update-user.dto";
-import { User } from "./schema/user.schema";
+import { User } from "./entity/user.entity";
+import { UsersRepository } from "./users.repository";
+import * as bcrypt from "bcrypt";
 
-@Injectable()
 export class UsersService {
-  create(createUserDto: CreateUserDto) {
-    return "This action adds a new user";
+  constructor(
+    @InjectRepository(User) private readonly userRepository: UsersRepository
+  ) {}
+
+  async create(createUserDto: CreateUserDto): Promise<User> {
+    const originUser: User = await this.userRepository.findOneBy({
+      email: createUserDto.email,
+    });
+
+    if (originUser) {
+      throw new HttpException("email is duplicated", HttpStatus.CONFLICT);
+    }
+
+    const password = await bcrypt.hash(createUserDto.password, 10);
+
+    const user: User = this.userRepository.create({
+      ...createUserDto,
+      password,
+    });
+    return await this.userRepository.save(user);
+    // return await this.userRepository
+    //   .createQueryBuilder()
+    //   .addSelect("password")
+    //   .where("email = :email", { email: user.email })
+    //   .getOne();
   }
 
-  findAll() {
-    return `This action returns all users`;
+  findAll(): Promise<User[]> {
+    try {
+      return this.userRepository.find();
+    } catch {
+      throw new HttpException("serverError", HttpStatus.INTERNAL_SERVER_ERROR);
+    }
   }
 
-  findOne(id: string) {
-    return `This action returns all users`;
+  // findOne(email: string, password: string) {
+  //   // return `This action returns all users`;
+  //   return this.userRepository.find({
+  //     where: { email: email, password: password },
+  //   });
+  // }
+
+  async findById(id: string): Promise<User> {
+    return await this.userRepository.findOneBy({
+      id: id,
+    });
+  }
+
+  async findByEmail(email: string): Promise<User> {
+    return await this.userRepository.findOneBy({
+      email: email,
+    });
   }
 
   update(id: number, updateUserDto: UpdateUserDto) {
@@ -24,5 +68,9 @@ export class UsersService {
 
   remove(id: number) {
     return `This action removes a #${id} user`;
+  }
+
+  async updateRefreshToken(id: string, user: User) {
+    this.userRepository.update(id, user);
   }
 }
