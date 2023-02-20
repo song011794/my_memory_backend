@@ -8,6 +8,7 @@ import { AuthModule } from "./auth/auth.module";
 import { TypeOrmModule, TypeOrmModuleOptions } from "@nestjs/typeorm";
 import { SnakeNamingStrategy } from "typeorm-naming-strategies";
 import { PostModule } from "./post/post.module";
+import { MailModule } from './mail/mail.module';
 import * as Joi from "joi";
 
 const typeOrmModuleOptions = {
@@ -57,6 +58,7 @@ const typeOrmModuleOptions = {
     UsersModule,
     AuthModule,
     PostModule,
+    MailModule,
   ],
   controllers: [AppController],
   providers: [AppService],

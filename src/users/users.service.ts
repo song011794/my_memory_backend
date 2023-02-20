@@ -6,10 +6,12 @@ import { UpdateUserDto } from "./dto/update-user.dto";
 import { User } from "./entity/user.entity";
 import { UsersRepository } from "./users.repository";
 import * as bcrypt from "bcrypt";
+import { MailService } from "src/mail/mail.service";
 
 export class UsersService {
   constructor(
-    @InjectRepository(User) private readonly userRepository: UsersRepository
+    @InjectRepository(User) private readonly userRepository: UsersRepository,
+    private readonly mailService: MailService
   ) {}
 
   async create(createUserDto: CreateUserDto): Promise<User> {
@@ -21,6 +23,10 @@ export class UsersService {
       throw new HttpException("email is duplicated", HttpStatus.CONFLICT);
     }
 
+    if(!this.mailService.sendMailToUser(createUserDto.email)){
+      throw new HttpException("unable to send mail", HttpStatus.CONFLICT);
+    }
+
     const password = await bcrypt.hash(createUserDto.password, 10);
 
     const user: User = this.userRepository.create({
@@ -28,11 +34,6 @@ export class UsersService {
       password,
     });
     return await this.userRepository.save(user);
-    // return await this.userRepository
-    //   .createQueryBuilder()
-    //   .addSelect("password")
-    //   .where("email = :email", { email: user.email })
-    //   .getOne();
   }
 
   findAll(): Promise<User[]> {
