@@ -5,14 +5,13 @@ import { MailerService } from "@nestjs-modules/mailer";
 export class MailService {
   constructor(private readonly mailerService: MailerService) {}
 
-  async sendMailToUser(email: string): Promise<boolean> {
+  async sendCodeMail(email: string, code : string): Promise<boolean> {
     try {
       await this.mailerService.sendMail({
         to: email,
         from: process.env.MAIL_USER,
-        subject: "Hello",
-        //text: "Hello World",
-        html: "<b>Hello World</b>",
+        subject: "추억 쌓기 회원가입 코드 안내",        
+        html: `Code : <b>${code}</b>`,
       });
 
       return true;

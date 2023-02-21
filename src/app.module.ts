@@ -1,15 +1,16 @@
 import { Module } from "@nestjs/common";
 import { AppController } from "./app.controller";
 import { AppService } from "./app.service";
-import { MongooseModule } from "@nestjs/mongoose";
 import { ConfigModule, ConfigService } from "@nestjs/config";
 import { UsersModule } from "./users/users.module";
 import { AuthModule } from "./auth/auth.module";
-import { TypeOrmModule, TypeOrmModuleOptions } from "@nestjs/typeorm";
 import { SnakeNamingStrategy } from "typeorm-naming-strategies";
 import { PostModule } from "./post/post.module";
-import { MailModule } from './mail/mail.module';
+import { MailModule } from "./mail/mail.module";
+import { AuthcodeModule } from "./authcode/authcode.module";
 import * as Joi from "joi";
+
+import { TypeOrmModule, TypeOrmModuleOptions } from "@nestjs/typeorm";
 
 const typeOrmModuleOptions = {
   useFactory: async (
@@ -41,7 +42,7 @@ const typeOrmModuleOptions = {
           .default("development"),
         PORT: Joi.number().default(3000),
         SWAGGER_USER: Joi.string(),
-        SWAGGER_PASSWORD: Joi.string(),        
+        SWAGGER_PASSWORD: Joi.string(),
         DB_HOST: Joi.string(),
         DB_PORT: Joi.number(),
         DB_USERNAME: Joi.string(),
@@ -55,12 +56,16 @@ const typeOrmModuleOptions = {
     }),
 
     TypeOrmModule.forRootAsync(typeOrmModuleOptions),
+
     UsersModule,
     AuthModule,
     PostModule,
     MailModule,
+    AuthcodeModule,
   ],
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule {}
+export class AppModule {
+  // constructor(private dataSource: DataSource) {}
+}

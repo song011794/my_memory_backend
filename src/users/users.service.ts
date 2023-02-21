@@ -4,18 +4,17 @@ import { InjectRepository } from "@nestjs/typeorm";
 import { CreateUserDto } from "./dto/create-user.dto";
 import { UpdateUserDto } from "./dto/update-user.dto";
 import { User } from "./entity/user.entity";
-import { UsersRepository } from "./users.repository";
 import * as bcrypt from "bcrypt";
-import { MailService } from "src/mail/mail.service";
+import { Repository } from "typeorm";
 
 export class UsersService {
   constructor(
-    @InjectRepository(User) private readonly userRepository: UsersRepository,
-    private readonly mailService: MailService
+    @InjectRepository(User)
+    private usersRepository: Repository<User>,
   ) {}
 
   async create(createUserDto: CreateUserDto): Promise<User> {
-    const originUser: User = await this.userRepository.findOneBy({
+    const originUser: User = await this.usersRepository.findOneBy({
       email: createUserDto.email,
     });
 
@@ -23,22 +22,18 @@ export class UsersService {
       throw new HttpException("email is duplicated", HttpStatus.CONFLICT);
     }
 
-    if(!this.mailService.sendMailToUser(createUserDto.email)){
-      throw new HttpException("unable to send mail", HttpStatus.CONFLICT);
-    }
-
     const password = await bcrypt.hash(createUserDto.password, 10);
 
-    const user: User = this.userRepository.create({
+    const user: User = this.usersRepository.create({
       ...createUserDto,
       password,
     });
-    return await this.userRepository.save(user);
+    return await this.usersRepository.save(user);
   }
 
   findAll(): Promise<User[]> {
     try {
-      return this.userRepository.find();
+      return this.usersRepository.find();
     } catch {
       throw new HttpException("serverError", HttpStatus.INTERNAL_SERVER_ERROR);
     }
@@ -52,13 +47,13 @@ export class UsersService {
   // }
 
   async findById(id: string): Promise<User> {
-    return await this.userRepository.findOneBy({
+    return await this.usersRepository.findOneBy({
       id: id,
     });
   }
 
   async findByEmail(email: string): Promise<User> {
-    return await this.userRepository.findOneBy({
+    return await this.usersRepository.findOneBy({
       email: email,
     });
   }
@@ -72,6 +67,6 @@ export class UsersService {
   }
 
   async updateRefreshToken(id: string, user: User) {
-    this.userRepository.update(id, user);
+    this.usersRepository.update(id, user);
   }
 }

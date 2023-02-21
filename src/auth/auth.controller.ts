@@ -10,12 +10,12 @@ export class AuthController {
   constructor(private authService: AuthService) {}
 
   @Post("signup")
-  signup(@Body() createUserDto: CreateUserDto) {
+  signUp(@Body() createUserDto: CreateUserDto) {
     return this.authService.signUp(createUserDto);
   }
 
   @Post("signin")
-  async login(@Body() data: LoginUserDto) {
+  async signIn(@Body() data: LoginUserDto) {
     return this.authService.signIn(data);
   }
 
@@ -29,5 +29,10 @@ export class AuthController {
     console.log(refreshToken);
 
     return this.authService.refreshTokens(userId, refreshToken);
+  }
+
+  @Post("singup/code")
+  async singUpCode(@Body() data: LoginUserDto) {
+    return this.authService.signIn(data);
   }
 }

@@ -13,12 +13,13 @@ import { CreateUserDto } from "src/users/dto/create-user.dto";
 import { ConfigService } from "@nestjs/config";
 import * as bcrypt from "bcrypt";
 
+
 @Injectable()
 export class AuthService {
   constructor(
     private readonly userService: UsersService,    
     private readonly jwtService: JwtService,
-    private configService: ConfigService
+    private configService: ConfigService,
   ) {}
 
   async signUp(createUserDto: CreateUserDto): Promise<any> {
